@@ -1,0 +1,118 @@
+{
+  "project_info": {
+    "project_number": "179930761818",
+    "project_id": "smart-tns",
+    "storage_bucket": "smart-tns.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:179930761818:android:593734e52d0277dbe1a663",
+        "android_client_info": {
+          "package_name": "com.example.my_flutter_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "179930761818-h7vtqm5juuvh740a16nnd9at2k8ead2u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGcrPWMLVRUXMN_cz30_WU8cD3LMmn7yc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "179930761818-h7vtqm5juuvh740a16nnd9at2k8ead2u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "179930761818-nv88a2d6fbmtnk0f3pefsthcgdt8p005.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "it.unical.smarttnes.smartTnes"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:179930761818:android:86a44f564b597f18e1a663",
+        "android_client_info": {
+          "package_name": "com.example.unicalhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "179930761818-h7vtqm5juuvh740a16nnd9at2k8ead2u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGcrPWMLVRUXMN_cz30_WU8cD3LMmn7yc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "179930761818-h7vtqm5juuvh740a16nnd9at2k8ead2u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "179930761818-nv88a2d6fbmtnk0f3pefsthcgdt8p005.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "it.unical.smarttnes.smartTnes"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:179930761818:android:007626568710b49ee1a663",
+        "android_client_info": {
+          "package_name": "it.unical.smarttnes.smart_tnes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "179930761818-h7vtqm5juuvh740a16nnd9at2k8ead2u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGcrPWMLVRUXMN_cz30_WU8cD3LMmn7yc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "179930761818-h7vtqm5juuvh740a16nnd9at2k8ead2u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "179930761818-nv88a2d6fbmtnk0f3pefsthcgdt8p005.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "it.unical.smarttnes.smartTnes"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
