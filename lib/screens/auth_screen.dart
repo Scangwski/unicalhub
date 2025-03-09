@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_screen.dart';
 import 'admin_screen.dart'; // Importa la schermata admin
+import 'professore_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -109,12 +110,20 @@ class _AuthScreenState extends State<AuthScreen> {
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
       if (userDoc.exists) {
         bool isAdmin = userDoc['admin'] ?? false;
+        bool isProfessore = userDoc['professore'] ?? false;
+
+        print('isAdmin: $isAdmin'); // Debug
+        print('isProfessore: $isProfessore'); // Debug
 
         if (isAdmin) {
           _navigateToAdmin();
-        } else {
-          _navigateToHome();
+          return;
         }
+        if (isProfessore) {
+          _navigateToProfessore();
+          return;
+        }
+        _navigateToAdmin();
       }
     } catch (e) {
       setState(() {
@@ -122,6 +131,7 @@ class _AuthScreenState extends State<AuthScreen> {
       });
     }
   }
+
 
   void _navigateToHome() {
     Navigator.of(context).pushReplacement(
@@ -132,6 +142,11 @@ class _AuthScreenState extends State<AuthScreen> {
   void _navigateToAdmin() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => const AdminScreen()),
+    );
+  }
+  void _navigateToProfessore() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const ProfessoreScreen()),
     );
   }
 
