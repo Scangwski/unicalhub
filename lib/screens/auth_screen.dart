@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'home_screen.dart';
-import 'admin_screen.dart'; // Importa la schermata admin
-import 'professore_screen.dart';
+import 'studente/home_screen.dart';
+import 'admin/admin_screen.dart'; // Importa la schermata admin
+import 'professore/professore_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -108,9 +108,13 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
+
       if (userDoc.exists) {
-        bool isAdmin = userDoc['admin'] ?? false;
-        bool isProfessore = userDoc['professore'] ?? false;
+        var data = userDoc.data() as Map<String, dynamic>?; // Converte il documento in una mappa
+        print('User Data: $data'); // Stampa tutto il documento per debug
+
+        bool isAdmin = data?['admin'] ?? false;
+        bool isProfessore = data?['professore'] ?? false;
 
         print('isAdmin: $isAdmin'); // Debug
         print('isProfessore: $isProfessore'); // Debug
@@ -123,13 +127,16 @@ class _AuthScreenState extends State<AuthScreen> {
           _navigateToProfessore();
           return;
         }
-        _navigateToAdmin();
+
+        print('Navigating to Home'); // Debug
+        _navigateToHome();
+      } else {
+        print('Document does not exist');
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Errore nel recupero del ruolo utente';
-      });
+      print('Error fetching user data: $e');
     }
+
   }
 
 

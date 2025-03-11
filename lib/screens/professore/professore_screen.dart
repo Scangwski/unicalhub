@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'auth_screen.dart';
-import 'voti_screen.dart';
-import 'corsi_screen.dart';
-import 'orario_screen.dart';
-import 'chat_screen.dart';
+import '../auth_screen.dart';
+import '../voti_screen.dart';
+import 'corsi_professore_screen.dart';
+import '../orario_screen.dart';
+import '../chat_screen.dart';
 
 class ProfessoreScreen extends StatelessWidget {
   const ProfessoreScreen({Key? key}) : super(key: key);

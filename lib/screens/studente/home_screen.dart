@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'auth_screen.dart';
-import 'voti_screen.dart';
-import 'corsi_screen.dart';
-import 'orario_screen.dart';
-import 'chat_screen.dart';
+import '../auth_screen.dart';
+import '../voti_screen.dart';
+import '../studente/corsi_studente_screen.dart';
+import '../orario_screen.dart';
+import '../chat_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -147,7 +147,7 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.red[400]!,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CorsiScreen()),
+                      MaterialPageRoute(builder: (context) => const CorsiStudenteScreen(studenteId: '',)),
                     ),
                   ),
                   _buildFeatureCard(
@@ -365,50 +365,4 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class VotiScreen extends StatelessWidget {
-  const VotiScreen({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Voti')),
-      body: const Center(child: Text('Schermata Voti (da implementare)')),
-    );
-  }
-}
-
-class CorsiScreen extends StatelessWidget {
-  const CorsiScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Assenze')),
-      body: const Center(child: Text('Schermata Assenze (da implementare)')),
-    );
-  }
-}
-
-class OrarioScreen extends StatelessWidget {
-  const OrarioScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Orario Lezioni')),
-      body: const Center(child: Text('Schermata Orario Lezioni (da implementare)')),
-    );
-  }
-}
-
-class ChatScreen extends StatelessWidget {
-  const ChatScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Chat con i Professori')),
-      body: const Center(child: Text('Schermata Chat (da implementare)')),
-    );
-  }
-}

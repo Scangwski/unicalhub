@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../firebase_service.dart';
+import '../../firebase_service.dart';
 
 class CorsiScreen extends StatefulWidget {
   const CorsiScreen({Key? key}) : super(key: key);
