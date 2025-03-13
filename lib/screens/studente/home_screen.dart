@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.indigo[700],
+        backgroundColor: Colors.redAccent[700],
         title: const Text('UniCalHub', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.indigo[700],
+                  color:Colors.redAccent[700],
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(30),
                     bottomRight: Radius.circular(30),

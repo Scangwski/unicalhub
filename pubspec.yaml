@@ -41,6 +41,9 @@ dependencies:
   cached_network_image: ^3.2.3  # Per caricare immagini da URL
   timeago: ^3.3.0  # Per formattare date relative (es. "2 ore fa")
   firebase_storage: ^12.4.4  # Per caricare file
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.2
+
 
 dev_dependencies:
   flutter_test:

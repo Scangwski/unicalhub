@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import "package:timeago/timeago.dart" as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../firebase_service.dart';
-import '../professore/pubblication__post_screen.dart';
+import '../firebase_service.dart';
+import 'pubblication__post_screen.dart';
 
 class CorsoPostsScreen extends StatefulWidget {
   final String corsoId;

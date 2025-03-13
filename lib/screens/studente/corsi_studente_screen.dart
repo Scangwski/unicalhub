@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:unicalhub/screens/posts_screen.dart';
+import 'dart:ui'; // Per effetto blur
+import 'package:google_fonts/google_fonts.dart';
 import '../../firebase_service.dart';
 
 class CorsiStudenteScreen extends StatefulWidget {
@@ -18,8 +21,15 @@ class _CorsiStudenteScreenState extends State<CorsiStudenteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100], // Sfondo chiaro per contrasto
       appBar: AppBar(
-        title: Text(_visualizzaCorsiDisponibili ? 'Corsi Disponibili' : 'I Miei Corsi'),
+        title: Text(
+          _visualizzaCorsiDisponibili ? 'Corsi Disponibili' : 'I Miei Corsi',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Colors.redAccent[700],
+        elevation: 10, // Ombra per profondità
+        shadowColor: Colors.black45,
       ),
       body: _visualizzaCorsiDisponibili
           ? _buildCorsiDisponibili()
@@ -30,10 +40,17 @@ class _CorsiStudenteScreenState extends State<CorsiStudenteScreen> {
             _visualizzaCorsiDisponibili = !_visualizzaCorsiDisponibili;
           });
         },
-        label: Text(_visualizzaCorsiDisponibili
-            ? 'Visualizza i miei corsi'
-            : 'Visualizza corsi disponibili'),
-        icon: Icon(_visualizzaCorsiDisponibili ? Icons.school : Icons.add),
+        backgroundColor: Colors.redAccent[700],
+        label: Text(
+          _visualizzaCorsiDisponibili
+              ? 'I Miei Corsi'
+              : 'Corsi Disponibili',
+          style: TextStyle(color: Colors.white),
+        ),
+        icon: Icon(
+          _visualizzaCorsiDisponibili ? Icons.school : Icons.search,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -45,21 +62,13 @@ class _CorsiStudenteScreenState extends State<CorsiStudenteScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-
         if (snapshot.hasError) {
           return Center(child: Text('Errore: ${snapshot.error}'));
         }
 
         final corsi = snapshot.data ?? [];
-
         if (corsi.isEmpty) {
-          return const Center(
-            child: Text(
-              'Non sei iscritto a nessun corso. Visualizza i corsi disponibili per iscriverti.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-          );
+          return _emptyState("Non sei iscritto a nessun corso. Cerca corsi disponibili!");
         }
 
         return ListView.builder(
@@ -67,29 +76,28 @@ class _CorsiStudenteScreenState extends State<CorsiStudenteScreen> {
           itemCount: corsi.length,
           itemBuilder: (context, index) {
             final corso = corsi[index];
-            return Card(
-              elevation: 2,
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      corso['nome'] ?? 'Corso senza nome',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+
+            return _corsoCard(
+              titolo: corso['nome'] ?? 'Corso senza nome',
+              descrizione: corso['descrizione'] ?? 'Nessuna descrizione disponibile',
+              icona: Icons.book,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (_, __, ___) => CorsoPostsScreen(
+                      corsoId: corso['id'],
+                      corsoNome: corso['nome'] ?? 'Corso senza nome',
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      corso['descrizione'] ?? 'Nessuna descrizione disponibile',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
+                    transitionsBuilder: (_, animation, __, child) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
             );
           },
         );
@@ -104,20 +112,13 @@ class _CorsiStudenteScreenState extends State<CorsiStudenteScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-
         if (snapshot.hasError) {
           return Center(child: Text('Errore: ${snapshot.error}'));
         }
 
         final corsi = snapshot.data ?? [];
-
         if (corsi.isEmpty) {
-          return const Center(
-            child: Text(
-              'Non ci sono corsi disponibili al momento.',
-              style: TextStyle(fontSize: 16),
-            ),
-          );
+          return _emptyState("Nessun corso disponibile al momento.");
         }
 
         return StreamBuilder<List<String>>(
@@ -132,35 +133,19 @@ class _CorsiStudenteScreenState extends State<CorsiStudenteScreen> {
                 final corso = corsi[index];
                 final bool iscritto = corsiIscritti.contains(corso['id']);
 
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          corso['nome'] ?? 'Corso senza nome',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          corso['descrizione'] ?? 'Nessuna descrizione disponibile',
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: iscritto
-                              ? null  // Disabilita il pulsante se già iscritto
-                              : () => _iscrivitiAlCorso(corso['id']),
-                          child: Text(iscritto ? 'Già iscritto' : 'Iscriviti'),
-                        ),
-                      ],
+                return _corsoCard(
+                  titolo: corso['nome'] ?? 'Corso senza nome',
+                  descrizione: corso['descrizione'] ?? 'Nessuna descrizione disponibile',
+                  icona: Icons.school,
+                  bottone: ElevatedButton(
+                    onPressed: iscritto ? null : () => _iscrivitiAlCorso(corso['id']),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: iscritto ? Colors.grey : Colors.redAccent[700],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child: Text(iscritto ? 'Già iscritto' : 'Iscriviti'),
                   ),
                 );
               },
@@ -168,6 +153,57 @@ class _CorsiStudenteScreenState extends State<CorsiStudenteScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _corsoCard({required String titolo, required String descrizione, required IconData icona, VoidCallback? onTap, Widget? bottone}) {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icona, color: Colors.redAccent[700], size: 28),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      titolo,
+                      style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                descrizione,
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+              ),
+              if (bottone != null) ...[
+                const SizedBox(height: 16),
+                Align(alignment: Alignment.centerRight, child: bottone),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyState(String message) {
+    return Center(
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black54),
+      ),
     );
   }
 
