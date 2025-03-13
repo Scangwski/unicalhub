@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:unicalhub/screens/professore/posts_screen.dart';
 import '../../firebase_service.dart';
 
 class CorsiScreen extends StatefulWidget {
@@ -39,13 +40,42 @@ class _CorsiScreenState extends State<CorsiScreen> {
             itemBuilder: (context, index) {
               final corso = corsi[index];
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  title: Text(corso['nome'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(corso['descrizione']),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _eliminaCorso(corso['id']),
+                elevation: 2,
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        corso['nome'] ?? 'Corso senza nome',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        corso['descrizione'] ?? 'Nessuna descrizione disponibile',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CorsoPostsScreen(
+                                corsoId: corso['id'],
+                                corsoNome: corso['nome'] ?? 'Corso',
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.forum),
+                        label: const Text('Visualizza Post'),
+                      ),
+                    ],
                   ),
                 ),
               );

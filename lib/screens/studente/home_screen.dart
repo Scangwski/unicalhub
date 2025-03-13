@@ -6,8 +6,45 @@ import '../studente/corsi_studente_screen.dart';
 import '../orario_screen.dart';
 import '../chat_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  // Funzione per gestire il cambio di indice nella bottom navigation bar
+  void _onItemTapped(int index) {
+    if (index == 0) {
+      // Siamo già nella Home, quindi aggiorniamo solo l'indice
+      setState(() {
+        _selectedIndex = index;
+      });
+    } else if (index == 1) {
+      // Naviga alla schermata dei corsi
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final uid = currentUser?.uid ?? '';
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CorsiStudenteScreen(studenteId: uid)),
+      );
+    } else if (index == 2) {
+      // Gestione della navigazione alle notifiche
+      setState(() {
+        _selectedIndex = index;
+      });
+      // Implementare qui la navigazione alla schermata delle notifiche
+    } else if (index == 3) {
+      // Gestione della navigazione al profilo
+      setState(() {
+        _selectedIndex = index;
+      });
+      // Implementare qui la navigazione alla schermata del profilo
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,10 +182,13 @@ class HomeScreen extends StatelessWidget {
                     title: 'Corsi',
                     icon: Icons.my_library_books_outlined,
                     color: Colors.red[400]!,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const CorsiStudenteScreen(studenteId: '',)),
-                    ),
+                    onTap: () {
+                      final uid = currentUser?.uid ?? '';
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CorsiStudenteScreen(studenteId: uid)),
+                      );
+                    },
                   ),
                   _buildFeatureCard(
                     context,
@@ -237,7 +277,8 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.indigo[700],
         unselectedItemColor: Colors.grey[600],
-        currentIndex: 0,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -364,5 +405,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-
