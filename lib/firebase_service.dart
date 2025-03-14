@@ -290,4 +290,170 @@ class FirebaseService {
       'commenti': FieldValue.arrayRemove([commento])
     });
   }
+  // Ottiene gli studenti iscritti a un corso specifico
+  Future<List<Map<String, dynamic>>> getStudentiIscritti(String corsoId) async {
+    final querySnapshot = await _firestore.collection('users').where('corsi', arrayContains: corsoId).get();
+
+    return querySnapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        'firstName': doc.data()['firstName'] ?? '',
+        'lastName': doc.data()['lastName'] ?? '',
+        'email': doc.data()['email'] ?? '',
+      };
+    }).toList();
+  }
+
+// Registra la presenza di uno studente per una lezione specifica
+  Future<void> registraPresenza(String corsoId, String lezioneId, String studenteId, bool presente) async {
+    await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('lezioni')
+        .doc(lezioneId)
+        .collection('presenze')
+        .doc(studenteId)
+        .set({
+      'presente': presente,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+// Crea una nuova lezione per un corso
+  Future<String> creaLezione(String corsoId, String titolo, String data) async {
+    final docRef = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('lezioni')
+        .add({
+      'titolo': titolo,
+      'data': data,
+      'creato_il': FieldValue.serverTimestamp(),
+    });
+
+    return docRef.id;
+  }
+
+// Ottiene tutte le lezioni di un corso
+  Stream<List<Map<String, dynamic>>> getLezioniCorso(String corsoId) {
+    return _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('lezioni')
+        .orderBy('creato_il', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data(),
+        };
+      }).toList();
+    });
+  }
+
+// Ottiene le presenze di una lezione specifica
+  Future<Map<String, bool>> getPresenzeLezione(String corsoId, String lezioneId) async {
+    final querySnapshot = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('lezioni')
+        .doc(lezioneId)
+        .collection('presenze')
+        .get();
+
+    Map<String, bool> presenze = {};
+    for (var doc in querySnapshot.docs) {
+      presenze[doc.id] = doc.data()['presente'] ?? false;
+    }
+
+    return presenze;
+  }
+  // Ottiene le presenze di tutti gli studenti per un corso specifico
+  Future<List<Map<String, dynamic>>> getPresenzePerStudente(String corsoId) async {
+    // Ottieni tutti gli studenti iscritti al corso
+    final studenti = await getStudentiIscritti(corsoId);
+
+    // Ottieni tutte le lezioni del corso
+    final lezioniSnapshot = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('lezioni')
+        .orderBy('data')
+        .get();
+
+    List<Map<String, dynamic>> risultato = [];
+
+    // Per ogni studente, recupera le presenze per ogni lezione
+    for (var studente in studenti) {
+      final studenteId = studente['id'];
+      final studenteNome = '${studente['firstName']} ${studente['lastName']}';
+
+      Map<String, dynamic> presenzeStudente = {
+        'id': studenteId,
+        'nome': studenteNome,
+        'email': studente['email'],
+        'presenze': <Map<String, dynamic>>[],
+        'statistiche': {
+          'totaleLezioni': lezioniSnapshot.docs.length,
+          'presenze': 0,
+          'assenze': 0,
+          'percentualePresenza': 0.0
+        }
+      };
+
+      // Per ogni lezione, verifica se lo studente era presente
+      for (var lezioneDoc in lezioniSnapshot.docs) {
+        final lezioneId = lezioneDoc.id;
+        final lezioneData = lezioneDoc.data();
+
+        // Cerca la presenza dello studente per questa lezione
+        final presenzaDoc = await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('lezioni')
+            .doc(lezioneId)
+            .collection('presenze')
+            .doc(studenteId)
+            .get();
+
+        final presente = presenzaDoc.exists && presenzaDoc.data()?['presente'] == true;
+
+        // Aggiungi all'elenco delle presenze dello studente
+        presenzeStudente['presenze'].add({
+          'lezioneId': lezioneId,
+          'titolo': lezioneData['titolo'],
+          'data': lezioneData['data'],
+          'presente': presente
+        });
+
+        // Aggiorna le statistiche
+        if (presente) {
+          presenzeStudente['statistiche']['presenze'] += 1;
+        } else {
+          presenzeStudente['statistiche']['assenze'] += 1;
+        }
+      }
+
+      // Calcola la percentuale di presenza
+      final totaleLezioni = presenzeStudente['statistiche']['totaleLezioni'];
+      final presenze = presenzeStudente['statistiche']['presenze'];
+
+      if (totaleLezioni > 0) {
+        presenzeStudente['statistiche']['percentualePresenza'] =
+            (presenze / totaleLezioni * 100).toDouble();
+      }
+
+      risultato.add(presenzeStudente);
+    }
+
+    // Ordina per percentuale di presenza decrescente
+    risultato.sort((a, b) {
+      final percA = a['statistiche']['percentualePresenza'] as double;
+      final percB = b['statistiche']['percentualePresenza'] as double;
+      return percB.compareTo(percA);
+    });
+
+    return risultato;
+  }
 }

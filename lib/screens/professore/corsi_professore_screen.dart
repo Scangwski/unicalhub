@@ -4,6 +4,7 @@ import 'package:unicalhub/screens/posts_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../firebase_service.dart';
+import './lezioni_screen.dart'; // Importa la nuova schermata delle lezioni
 
 class CorsiScreen extends StatefulWidget {
   const CorsiScreen({Key? key}) : super(key: key);
@@ -89,32 +90,62 @@ class _CorsiScreenState extends State<CorsiScreen> {
                         ),
                         const SizedBox(height: 16),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CorsoPostsScreen(
-                                      corsoId: corso['id'],
-                                      corsoNome: corso['nome'] ?? 'Corso',
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CorsoPostsScreen(
+                                        corsoId: corso['id'],
+                                        corsoNome: corso['nome'] ?? 'Corso',
+                                      ),
                                     ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blueAccent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueAccent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                icon: const Icon(Icons.forum, color: Colors.white),
+                                label: const Text(
+                                  'Post',
+                                  style: TextStyle(color: Colors.white),
                                 ),
                               ),
-                              icon: const Icon(Icons.forum, color: Colors.white),
-                              label: const Text(
-                                'Visualizza Post',
-                                style: TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(width: 8),
+                            // Nuovo pulsante per gestire le lezioni e presenze
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LezioniScreen(
+                                        corsoId: corso['id'],
+                                        corsoNome: corso['nome'] ?? 'Corso',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.library_books, color: Colors.white),
+                                label: const Text(
+                                  'Lezioni',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _confermaEliminazioneCorso(corso['id']),
@@ -146,7 +177,6 @@ class _CorsiScreenState extends State<CorsiScreen> {
         title: Text(
           'Aggiungi un corso',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,

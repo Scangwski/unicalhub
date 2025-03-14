@@ -43,7 +43,7 @@ dependencies:
   firebase_storage: ^12.4.4  # Per caricare file
   google_fonts: ^6.2.1
   flutter_animate: ^4.5.2
-
+  firebase_messaging: ^15.2.4
 
 dev_dependencies:
   flutter_test:
