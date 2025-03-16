@@ -38,7 +38,7 @@ class _LezioniScreenState extends State<LezioniScreen> {
         backgroundColor: Colors.indigo[700],
         actions: [
           IconButton(
-            icon: const Icon(Icons.checklist),
+            icon: const Icon(Icons.checklist, color: Colors.white,),
             onPressed: () {
               // Naviga alla schermata ReportPresenzeStudentiScreen
               Navigator.push(

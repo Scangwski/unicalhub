@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -583,5 +584,185 @@ class FirebaseService {
         .doc(messageId)
         .delete();
   }
+  // Struttura dati per le notifiche
+  Future<List<Map<String, dynamic>>> getAttivitaRecenti(int limit) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return [];
+
+    List<Map<String, dynamic>> attivita = [];
+
+    // 1. Ottieni nuovi post nei corsi a cui sei iscritto (per studenti) o che insegni (per docenti)
+    List<String> corsiIds = [];
+
+    // Per studenti
+    final userDoc = await _firestore.collection('users').doc(uid).get();
+    if (userDoc.exists && userDoc.data()!.containsKey('corsi')) {
+      corsiIds.addAll(List<String>.from(userDoc.data()!['corsi'] ?? []));
+    }
+
+    // Per docenti
+    final corsiDocenti = await _firestore.collection('corsi')
+        .where('docenti', arrayContains: uid)
+        .get();
+
+    corsiDocenti.docs.forEach((doc) {
+      if (!corsiIds.contains(doc.id)) {
+        corsiIds.add(doc.id);
+      }
+    });
+
+    // Raccolta post recenti da tutti i corsi pertinenti
+    for (String corsoId in corsiIds) {
+      final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+      final String nomeCorso = corsoDoc.data()?['nome'] ?? 'Corso';
+
+      final posts = await _firestore
+          .collection('corsi')
+          .doc(corsoId)
+          .collection('posts')
+          .orderBy('creato_il', descending: true)
+          .limit(3)
+          .get();
+
+      for (var post in posts.docs) {
+        // Escludi i post creati dall'utente corrente
+        if (post.data()['autoreId'] != uid) {
+          attivita.add({
+            'tipo': 'post',
+            'titolo': 'Nuovo post in $nomeCorso',
+            'subtitle': '${post.data()['autoreNome']} ha pubblicato un nuovo post',
+            'time': _formatTimestamp(post.data()['creato_il']),
+            'icon': Icons.description.codePoint,
+            'color': Colors.blue[600]!.value,
+            'corsoId': corsoId,
+            'postId': post.id,
+            'timestamp': post.data()['creato_il'],
+          });
+        }
+      }
+    }
+
+    // 2. Ottieni nuovi messaggi nelle chat
+    final chats = await _firestore
+        .collection('chats')
+        .where('participants', arrayContains: uid)
+        .get();
+
+    for (var chat in chats.docs) {
+      final messages = await _firestore
+          .collection('chats')
+          .doc(chat.id)
+          .collection('messages')
+          .where('senderId', isNotEqualTo: uid) // Solo messaggi ricevuti
+          .orderBy('senderId') // Necessario per usare il where non equals
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      for (var message in messages.docs) {
+        // Verifica se il messaggio è stato letto
+        final unreadCounts = chat.data()['unreadCount'] as Map<String, dynamic>? ?? {};
+        final int unreadCount = unreadCounts[uid] ?? 0;
+
+        if (unreadCount > 0) {
+          final senderName = chat.data()['participantNames'][message.data()['senderId']] ?? 'Utente';
+
+          attivita.add({
+            'tipo': 'messaggio',
+            'titolo': 'Nuovo messaggio',
+            'subtitle': 'Hai ricevuto un messaggio da $senderName',
+            'time': _formatTimestamp(message.data()['timestamp']),
+            'icon': Icons.message.codePoint,
+            'color': Colors.purple[400]!.value,
+            'chatId': chat.id,
+            'timestamp': message.data()['timestamp'],
+          });
+        }
+      }
+    }
+
+    // 3. Ottieni registrazioni presenze recenti (solo per i docenti)
+    for (String corsoId in corsiIds) {
+      // Controlla se è un docente
+      final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+      final docenti = List<String>.from(corsoDoc.data()?['docenti'] ?? []);
+
+      if (docenti.contains(uid)) {
+        final String nomeCorso = corsoDoc.data()?['nome'] ?? 'Corso';
+
+        // Ottieni le lezioni recenti
+        final lezioni = await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('lezioni')
+            .orderBy('creato_il', descending: true)
+            .limit(2)
+            .get();
+
+        for (var lezione in lezioni.docs) {
+          attivita.add({
+            'tipo': 'lezione',
+            'titolo': 'Lezione registrata in $nomeCorso',
+            'subtitle': 'Presenze registrate per "${lezione.data()['titolo']}"',
+            'time': _formatTimestamp(lezione.data()['creato_il']),
+            'icon': Icons.people.codePoint,
+            'color': Colors.green[600]!.value,
+            'corsoId': corsoId,
+            'lezioneId': lezione.id,
+            'timestamp': lezione.data()['creato_il'],
+          });
+        }
+      }
+    }
+
+    // Ordina le attività per timestamp e prendi solo le più recenti
+    attivita.sort((a, b) {
+      final timestampA = a['timestamp'] as Timestamp?;
+      final timestampB = b['timestamp'] as Timestamp?;
+
+      if (timestampA == null && timestampB == null) return 0;
+      if (timestampA == null) return 1;
+      if (timestampB == null) return -1;
+
+      return timestampB.compareTo(timestampA);
+    });
+
+    // Limita il numero di attività da restituire
+    if (attivita.length > limit) {
+      attivita = attivita.sublist(0, limit);
+    }
+
+    return attivita;
+  }
+
+  // Helper per formattare i timestamp
+  String _formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return '';
+
+    final now = DateTime.now();
+    final date = timestamp.toDate();
+    final difference = now.difference(date);
+
+    if (difference.inMinutes < 1) {
+      return 'Ora';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes} min fa';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours} ore fa';
+    } else if (difference.inDays < 2) {
+      return 'Ieri';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} giorni fa';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  // Stream per ottenere aggiornamenti in tempo reale sulle attività
+  Stream<List<Map<String, dynamic>>> streamAttivitaRecenti(int limit) {
+    return Stream.periodic(const Duration(seconds: 30))
+        .asyncMap((_) => getAttivitaRecenti(limit));
+  }
+
 
 }

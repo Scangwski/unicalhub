@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:unicalhub/firebase_service.dart';
 import 'package:unicalhub/screens/chat_list_screen.dart';
 import '../auth_screen.dart';
 import '../voti_screen.dart';
@@ -16,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  final FirebaseService _firebaseService = FirebaseService(); // Istanza del servizio
+
 
   // Funzione per gestire il cambio di indice nella bottom navigation bar
   void _onItemTapped(int index) {
@@ -61,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('UniCalHub', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Logout',
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
@@ -229,29 +232,74 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               const SizedBox(height: 10),
+              // Lista attività recenti con StreamBuilder
+              StreamBuilder<List<Map<String, dynamic>>>(
+                stream: _firebaseService.streamAttivitaRecenti(5), // Mostra le 5 attività più recenti
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              // Lista attività recenti
-              _buildActivityItem(
-                title: 'Nuovo voto in Matematica',
-                subtitle: 'Il prof. Rossi ha inserito un nuovo voto',
-                time: '10:30',
-                icon: Icons.assignment,
-                color: Colors.blue[600]!,
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Errore nel caricamento delle attività',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    );
+                  }
+
+                  final attivita = snapshot.data ?? [];
+
+                  if (attivita.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          'Nessuna attività recente',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: attivita.length,
+                    itemBuilder: (context, index) {
+                      final item = attivita[index];
+                      return _buildActivityItem(
+                        title: item['titolo'],
+                        subtitle: item['subtitle'],
+                        time: item['time'],
+                        icon: IconData(item['icon'], fontFamily: 'MaterialIcons'),
+                        color: Color(item['color']),
+                        onTap: () {
+                          // Naviga in base al tipo di attività
+                          if (item['tipo'] == 'post') {
+                            // Naviga al post specifico
+                            // Implementare la navigazione al corso e al post
+                          } else if (item['tipo'] == 'messaggio') {
+                            // Naviga alla chat
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatListScreen(),
+                              ),
+                            );
+                          } else if (item['tipo'] == 'lezione') {
+                            // Naviga alla lezione/presenze
+                            // Implementare la navigazione
+                          }
+                        },
+                      );
+                    },
+                  );
+                },
               ),
-              _buildActivityItem(
-                title: 'Lezione Annullata',
-                subtitle: 'La lezione di Fisica di oggi è stata annullata',
-                time: 'Ieri',
-                icon: Icons.cancel,
-                color: Colors.red[400]!,
-              ),
-              _buildActivityItem(
-                title: 'Nuovo Messaggio',
-                subtitle: 'Hai ricevuto un messaggio dalla Prof.ssa Bianchi',
-                time: 'Ieri',
-                icon: Icons.message,
-                color: Colors.purple[400]!,
-              ),
+
+
             ],
           ),
         ),
@@ -337,53 +385,57 @@ class _HomeScreenState extends State<HomeScreen> {
     required String time,
     required IconData icon,
     required Color color,
+    required VoidCallback onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Text(
-            time,
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 12,
+            Text(
+              time,
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 12,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
