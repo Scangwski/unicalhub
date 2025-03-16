@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:unicalhub/screens/chat_list_screen.dart';
 import '../auth_screen.dart';
 import '../voti_screen.dart';
 import '../studente/corsi_studente_screen.dart';
@@ -167,16 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisSpacing: 15,
                 mainAxisSpacing: 15,
                 children: [
-                  _buildFeatureCard(
-                    context,
-                    title: 'Voti',
-                    icon: Icons.assessment,
-                    color: Colors.blue[600]!,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const VotiScreen()),
-                    ),
-                  ),
+
                   _buildFeatureCard(
                     context,
                     title: 'Corsi',
@@ -190,16 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  _buildFeatureCard(
-                    context,
-                    title: 'Orario',
-                    icon: Icons.calendar_today,
-                    color: Colors.green[600]!,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const OrarioScreen()),
-                    ),
-                  ),
+
                   _buildFeatureCard(
                     context,
                     title: 'Chat',
@@ -207,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.purple[400]!,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ChatScreen()),
+                      MaterialPageRoute(builder: (context) => const ChatListScreen()),
                     ),
                   ),
                 ],

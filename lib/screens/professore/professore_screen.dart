@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:unicalhub/screens/chat_list_screen.dart';
 import '../auth_screen.dart';
 import '../voti_screen.dart';
 import 'corsi_professore_screen.dart';
@@ -130,16 +131,7 @@ class ProfessoreScreen extends StatelessWidget {
                 crossAxisSpacing: 15,
                 mainAxisSpacing: 15,
                 children: [
-                  _buildFeatureCard(
-                    context,
-                    title: 'Voti',
-                    icon: Icons.assessment,
-                    color: Colors.blue[600]!,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const VotiScreen()),
-                    ),
-                  ),
+
                   _buildFeatureCard(
                     context,
                     title: 'Corsi',
@@ -150,16 +142,7 @@ class ProfessoreScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => const CorsiScreen()),
                     ),
                   ),
-                  _buildFeatureCard(
-                    context,
-                    title: 'Orario',
-                    icon: Icons.calendar_today,
-                    color: Colors.green[600]!,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const OrarioScreen()),
-                    ),
-                  ),
+
                   _buildFeatureCard(
                     context,
                     title: 'Chat',
@@ -167,7 +150,7 @@ class ProfessoreScreen extends StatelessWidget {
                     color: Colors.purple[400]!,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ChatScreen()),
+                      MaterialPageRoute(builder: (context) => const ChatListScreen()),
                     ),
                   ),
                 ],

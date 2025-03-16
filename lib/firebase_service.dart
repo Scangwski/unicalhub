@@ -456,4 +456,132 @@ class FirebaseService {
 
     return risultato;
   }
+  /// Ottiene la lista di chat dell'utente corrente
+  Stream<List<Map<String, dynamic>>> getChats() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const Stream.empty();
+
+    // Versione senza orderBy che non richiede un indice composito
+    return _firestore
+        .collection('chats')
+        .where('participants', arrayContains: uid)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) return [];
+
+      // Ottieni tutti i documenti e ordina lato client
+      final chats = snapshot.docs.map((doc) {
+        final data = doc.data();
+
+        final participants = List<String>.from(data['participants'] ?? []);
+        String otherUserId = '';
+
+        if (participants.isNotEmpty) {
+          otherUserId = participants.firstWhere(
+                  (id) => id != uid,
+              orElse: () => ''
+          );
+        }
+
+        final participantNames = data['participantNames'] as Map<String, dynamic>? ?? {};
+        final unreadCounts = data['unreadCount'] as Map<String, dynamic>? ?? {};
+
+        return {
+          'id': doc.id,
+          'otherUserId': otherUserId,
+          'otherUserName': participantNames[otherUserId] ?? 'Utente',
+          'lastMessage': data['lastMessage'] ?? '',
+          'timestamp': data['lastMessageTimestamp'],
+          'unreadCount': unreadCounts[uid] ?? 0,
+        };
+      }).toList();
+
+      // Ordina i documenti manualmente per timestamp decrescente
+      chats.sort((a, b) {
+        final timestampA = a['timestamp'] as Timestamp?;
+        final timestampB = b['timestamp'] as Timestamp?;
+
+        if (timestampA == null && timestampB == null) return 0;
+        if (timestampA == null) return 1;
+        if (timestampB == null) return -1;
+
+        return timestampB.compareTo(timestampA);
+      });
+
+      return chats;
+    });
+  }
+
+  /// Ottiene tutti gli utenti disponibili per chattare (escluso l'utente corrente)
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return [];
+
+    final querySnapshot = await _firestore.collection('users').get();
+
+    return querySnapshot.docs
+        .where((doc) => doc.id != uid)
+        .map((doc) {
+      final data = doc.data();
+      final firstName = data['firstName'] ?? '';
+      final lastName = data['lastName'] ?? '';
+      final fullName = '${firstName} ${lastName}'.trim();
+
+      return {
+        'id': doc.id,
+        'name': fullName.isEmpty ? 'Utente' : fullName,
+        'email': data['email'] ?? '',
+      };
+    })
+        .toList();
+  }
+
+  /// Ottiene il numero totale di messaggi non letti per l'utente corrente
+  Stream<int> getTotalUnreadMessages() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return Stream.value(0);
+
+    return _firestore
+        .collection('chats')
+        .where('participants', arrayContains: uid)
+        .snapshots()
+        .map((snapshot) {
+      int total = 0;
+      for (var doc in snapshot.docs) {
+        final unreadCount = doc.data()['unreadCount']?[uid] ?? 0;
+        total += unreadCount as int;
+      }
+      return total;
+    });
+  }
+
+  /// Elimina un messaggio specifico
+  Future<void> deleteMessage(String chatId, String messageId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Verifica che l'utente sia il mittente del messaggio
+    final messageDoc = await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .get();
+
+    if (!messageDoc.exists) return;
+
+    final messageData = messageDoc.data()!;
+    if (messageData['senderId'] != uid) {
+      throw Exception('Non hai i permessi per eliminare questo messaggio');
+    }
+
+    // Elimina il messaggio
+    await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .delete();
+  }
+
 }
