@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unicalhub/firebase_service.dart';
 import 'package:unicalhub/screens/chat_list_screen.dart';
+import 'package:unicalhub/screens/professore/appelli_professore_screen.dart';
+import 'package:unicalhub/screens/studente/appelli_studenti_screen.dart';
 import '../auth_screen.dart';
 import '../voti_screen.dart';
 import '../studente/corsi_studente_screen.dart';
@@ -196,6 +198,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       MaterialPageRoute(builder: (context) => const ChatListScreen()),
                     ),
                   ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Appelli',
+                    icon: Icons.event_note,
+                    color: Colors.green[700]!,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>  AppelliStudenteScreen()),
+                    ),
+                  ),
                 ],
               ),
 
@@ -273,7 +285,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: item['titolo'],
                         subtitle: item['subtitle'],
                         time: item['time'],
-                        icon: IconData(item['icon'], fontFamily: 'MaterialIcons'),
+                        icon: IconData(
+                            (item['icon'] is int) ? item['icon'] : item['icon'].toInt(),
+                            fontFamily: 'MaterialIcons'
+                        ),
                         color: Color(item['color']),
                         onTap: () {
                           // Naviga in base al tipo di attività

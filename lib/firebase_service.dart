@@ -17,7 +17,7 @@ class FirebaseService {
         snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
   }
 
-  // 🔹 Ottiene tutti i corsi disponibili
+  //  Ottiene tutti i corsi disponibili
   Stream<List<Map<String, dynamic>>> getCorsiDisponibili() {
     return _firestore.collection('corsi').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
@@ -92,11 +92,10 @@ class FirebaseService {
       'creato_il': FieldValue.serverTimestamp(),
     });
   }
-  Future<void> pubblicaPost(
-      String corsoId,
+
+  Future<void> pubblicaPost(String corsoId,
       String contenuto,
-      List<String> fileUrls,
-      ) async {
+      List<String> fileUrls,) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
@@ -164,11 +163,9 @@ class FirebaseService {
   }
 
 // Update the aggiungiCommento function in firebase_service.dart
-  Future<void> aggiungiCommento(
-      String corsoId,
+  Future<void> aggiungiCommento(String corsoId,
       String postId,
-      String testo
-      ) async {
+      String testo) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
@@ -198,6 +195,7 @@ class FirebaseService {
       'commenti': FieldValue.arrayUnion([commento])
     });
   }
+
   // Elimina un post
   Future<void> eliminaPost(String corsoId, String postId) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -243,7 +241,8 @@ class FirebaseService {
   }
 
 // Elimina un commento da un post
-  Future<void> eliminaCommento(String corsoId, String postId, Map<String, dynamic> commento) async {
+  Future<void> eliminaCommento(String corsoId, String postId,
+      Map<String, dynamic> commento) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
@@ -269,7 +268,9 @@ class FirebaseService {
       // Controlla se l'utente è un docente
       bool isDocente = false;
       if (!isPostAuthor) {
-        final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+        final corsoDoc = await _firestore.collection('corsi')
+            .doc(corsoId)
+            .get();
         if (corsoDoc.exists) {
           final docenti = List<String>.from(corsoDoc.data()?['docenti'] ?? []);
           isDocente = docenti.contains(uid);
@@ -291,9 +292,11 @@ class FirebaseService {
       'commenti': FieldValue.arrayRemove([commento])
     });
   }
+
   // Ottiene gli studenti iscritti a un corso specifico
   Future<List<Map<String, dynamic>>> getStudentiIscritti(String corsoId) async {
-    final querySnapshot = await _firestore.collection('users').where('corsi', arrayContains: corsoId).get();
+    final querySnapshot = await _firestore.collection('users').where(
+        'corsi', arrayContains: corsoId).get();
 
     return querySnapshot.docs.map((doc) {
       return {
@@ -306,7 +309,8 @@ class FirebaseService {
   }
 
 // Registra la presenza di uno studente per una lezione specifica
-  Future<void> registraPresenza(String corsoId, String lezioneId, String studenteId, bool presente) async {
+  Future<void> registraPresenza(String corsoId, String lezioneId,
+      String studenteId, bool presente) async {
     await _firestore
         .collection('corsi')
         .doc(corsoId)
@@ -354,7 +358,8 @@ class FirebaseService {
   }
 
 // Ottiene le presenze di una lezione specifica
-  Future<Map<String, bool>> getPresenzeLezione(String corsoId, String lezioneId) async {
+  Future<Map<String, bool>> getPresenzeLezione(String corsoId,
+      String lezioneId) async {
     final querySnapshot = await _firestore
         .collection('corsi')
         .doc(corsoId)
@@ -370,8 +375,10 @@ class FirebaseService {
 
     return presenze;
   }
+
   // Ottiene le presenze di tutti gli studenti per un corso specifico
-  Future<List<Map<String, dynamic>>> getPresenzePerStudente(String corsoId) async {
+  Future<List<Map<String, dynamic>>> getPresenzePerStudente(
+      String corsoId) async {
     // Ottieni tutti gli studenti iscritti al corso
     final studenti = await getStudentiIscritti(corsoId);
 
@@ -418,7 +425,8 @@ class FirebaseService {
             .doc(studenteId)
             .get();
 
-        final presente = presenzaDoc.exists && presenzaDoc.data()?['presente'] == true;
+        final presente = presenzaDoc.exists &&
+            presenzaDoc.data()?['presente'] == true;
 
         // Aggiungi all'elenco delle presenze dello studente
         presenzeStudente['presenze'].add({
@@ -457,6 +465,7 @@ class FirebaseService {
 
     return risultato;
   }
+
   /// Ottiene la lista di chat dell'utente corrente
   Stream<List<Map<String, dynamic>>> getChats() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -484,7 +493,8 @@ class FirebaseService {
           );
         }
 
-        final participantNames = data['participantNames'] as Map<String, dynamic>? ?? {};
+        final participantNames = data['participantNames'] as Map<String,
+            dynamic>? ?? {};
         final unreadCounts = data['unreadCount'] as Map<String, dynamic>? ?? {};
 
         return {
@@ -584,6 +594,7 @@ class FirebaseService {
         .doc(messageId)
         .delete();
   }
+
   // Struttura dati per le notifiche
   Future<List<Map<String, dynamic>>> getAttivitaRecenti(int limit) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -630,7 +641,8 @@ class FirebaseService {
           attivita.add({
             'tipo': 'post',
             'titolo': 'Nuovo post in $nomeCorso',
-            'subtitle': '${post.data()['autoreNome']} ha pubblicato un nuovo post',
+            'subtitle': '${post
+                .data()['autoreNome']} ha pubblicato un nuovo post',
             'time': _formatTimestamp(post.data()['creato_il']),
             'icon': Icons.description.codePoint,
             'color': Colors.blue[600]!.value,
@@ -661,11 +673,13 @@ class FirebaseService {
 
       for (var message in messages.docs) {
         // Verifica se il messaggio è stato letto
-        final unreadCounts = chat.data()['unreadCount'] as Map<String, dynamic>? ?? {};
+        final unreadCounts = chat.data()['unreadCount'] as Map<String,
+            dynamic>? ?? {};
         final int unreadCount = unreadCounts[uid] ?? 0;
 
         if (unreadCount > 0) {
-          final senderName = chat.data()['participantNames'][message.data()['senderId']] ?? 'Utente';
+          final senderName = chat.data()['participantNames'][message
+              .data()['senderId']] ?? 'Utente';
 
           attivita.add({
             'tipo': 'messaggio',
@@ -764,5 +778,552 @@ class FirebaseService {
         .asyncMap((_) => getAttivitaRecenti(limit));
   }
 
+  // Crea un nuovo appello d'esame
+  Future<String> creaAppello(String corsoId, String titolo, DateTime data,
+      String descrizione) async {
+    final docRef = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .add({
+      'titolo': titolo,
+      'data': Timestamp.fromDate(data),
+      'descrizione': descrizione,
+      'iscritti': [],
+      'creato_il': FieldValue.serverTimestamp(),
+      'stato': 'aperto', // Stati possibili: 'aperto', 'chiuso', 'valutato'
+    });
 
+    return docRef.id;
+  }
+
+// Ottiene tutti gli appelli di un corso
+  Stream<List<Map<String, dynamic>>> getAppelliCorso(String corsoId) {
+    return _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .orderBy('data', descending: false)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data(),
+        };
+      }).toList();
+    });
+  }
+
+// Iscrizione di uno studente ad un appello
+  Future<void> iscrivitiAppello(String corsoId, String appelloId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Ottieni info dell'utente
+    final userDoc = await _firestore.collection('users').doc(uid).get();
+    final firstName = userDoc.data()?['firstName'] ?? '';
+    final lastName = userDoc.data()?['lastName'] ?? '';
+    final fullName = '${firstName} ${lastName}'.trim();
+    final email = userDoc.data()?['email'] ?? '';
+
+    // Verifica disponibilità posti
+    final appelloDoc = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .get();
+
+    if (!appelloDoc.exists) throw Exception('Appello non trovato');
+
+    final appelloData = appelloDoc.data()!;
+    final iscritti = List<Map<String, dynamic>>.from(
+        appelloData['iscritti'] ?? []);
+
+    // Controlla se lo studente è già iscritto
+    if (iscritti.any((iscritto) => iscritto['id'] == uid)) {
+      throw Exception('Sei già iscritto a questo appello');
+    }
+
+
+    // Controlla che l'appello sia aperto
+    if (appelloData['stato'] != 'aperto') {
+      throw Exception('Le iscrizioni per questo appello sono chiuse');
+    }
+
+    // Aggiungi lo studente alla lista degli iscritti
+    await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .update({
+      'iscritti': FieldValue.arrayUnion([
+        {
+          'id': uid,
+          'nome': fullName.isEmpty ? 'Utente' : fullName,
+          'email': email,
+          'iscritto_il': Timestamp.now(),
+          'voto': null,
+          // Il voto sarà inserito dal professore
+          'stato': 'iscritto',
+          // Stati possibili: 'iscritto', 'presente', 'assente'
+        }
+      ])
+    });
+  }
+
+// Cancella iscrizione di uno studente ad un appello
+  Future<void> cancellaIscrizioneAppello(String corsoId,
+      String appelloId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Ottieni l'iscrizione attuale dello studente
+    final appelloDoc = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .get();
+
+    if (!appelloDoc.exists) throw Exception('Appello non trovato');
+
+    final appelloData = appelloDoc.data()!;
+    final iscritti = List<Map<String, dynamic>>.from(
+        appelloData['iscritti'] ?? []);
+
+    // Trova l'iscrizione dello studente
+    final iscrizioneStudente = iscritti.firstWhere(
+          (iscritto) => iscritto['id'] == uid,
+      orElse: () => <String, dynamic>{},
+    );
+
+    if (iscrizioneStudente.isEmpty) {
+      throw Exception('Non sei iscritto a questo appello');
+    }
+
+    // Controlla che l'appello sia ancora aperto
+    if (appelloData['stato'] != 'aperto') {
+      throw Exception('Non è più possibile cancellarsi da questo appello');
+    }
+
+    // Rimuovi lo studente dalla lista degli iscritti
+    await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .update({
+      'iscritti': FieldValue.arrayRemove([iscrizioneStudente])
+    });
+  }
+
+// Ottieni appelli a cui uno studente è iscritto
+  Stream<List<Map<String, dynamic>>> getAppelliIscritto() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const Stream.empty();
+
+    // Ottieni tutti i corsi a cui lo studente è iscritto
+    return getCorsiIscritti().asyncMap((corsiIds) async {
+      List<Map<String, dynamic>> appelliIscritto = [];
+
+      for (String corsoId in corsiIds) {
+        final corsoDoc = await _firestore.collection('corsi')
+            .doc(corsoId)
+            .get();
+        final nomeCorso = corsoDoc.data()?['nome'] ?? 'Corso';
+
+        // Ottieni tutti gli appelli del corso
+        final appelliSnapshot = await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('appelli')
+            .get();
+
+        for (var appelloDoc in appelliSnapshot.docs) {
+          final appelloData = appelloDoc.data();
+          final iscritti = List<Map<String, dynamic>>.from(
+              appelloData['iscritti'] ?? []);
+
+          // Controlla se lo studente è iscritto
+          final iscrizioneStudente = iscritti.firstWhere(
+                (iscritto) => iscritto['id'] == uid,
+            orElse: () => <String, dynamic>{},
+          );
+
+          if (iscrizioneStudente.isNotEmpty) {
+            appelliIscritto.add({
+              'id': appelloDoc.id,
+              'corsoId': corsoId,
+              'nomeCorso': nomeCorso,
+              'titolo': appelloData['titolo'],
+              'data': appelloData['data'],
+              'descrizione': appelloData['descrizione'],
+              'stato': appelloData['stato'],
+              'voto': iscrizioneStudente['voto'],
+              'statoStudente': iscrizioneStudente['stato'],
+            });
+          }
+        }
+      }
+
+      // Ordina gli appelli per data
+      appelliIscritto.sort((a, b) {
+        final dataA = (a['data'] as Timestamp).toDate();
+        final dataB = (b['data'] as Timestamp).toDate();
+        return dataA.compareTo(dataB);
+      });
+
+      return appelliIscritto;
+    });
+  }
+
+// Ottieni gli appelli di un professore
+  Stream<List<Map<String, dynamic>>> getAppelliProfessore() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const Stream.empty();
+
+    // Prima ottieni i corsi di cui il professore è docente
+    return _firestore
+        .collection('corsi')
+        .where('docenti', arrayContains: uid)
+        .snapshots()
+        .asyncMap((corsiSnapshot) async {
+      List<Map<String, dynamic>> appelli = [];
+
+      for (var corsoDoc in corsiSnapshot.docs) {
+        final corsoId = corsoDoc.id;
+        final nomeCorso = corsoDoc.data()['nome'] ?? 'Corso';
+
+        // Ottieni gli appelli di ogni corso
+        final appelliSnapshot = await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('appelli')
+            .orderBy('data')
+            .get();
+
+        for (var appelloDoc in appelliSnapshot.docs) {
+          final appelloData = appelloDoc.data();
+          appelli.add({
+            'id': appelloDoc.id,
+            'corsoId': corsoId,
+            'nomeCorso': nomeCorso,
+            'titolo': appelloData['titolo'],
+            'data': appelloData['data'],
+            'descrizione': appelloData['descrizione'],
+            'stato': appelloData['stato'],
+            'iscritti': appelloData['iscritti'] ?? [],
+
+          });
+        }
+      }
+
+      // Ordina gli appelli per data
+      appelli.sort((a, b) {
+        final dataA = (a['data'] as Timestamp).toDate();
+        final dataB = (b['data'] as Timestamp).toDate();
+        return dataA.compareTo(dataB);
+      });
+
+      return appelli;
+    });
+  }
+
+// Chiudi le iscrizioni a un appello
+  Future<void> chiudiAppello(String corsoId, String appelloId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Verifica che l'utente sia un docente del corso
+    final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+    if (!corsoDoc.exists) throw Exception('Corso non trovato');
+
+    final docenti = List<String>.from(corsoDoc.data()?['docenti'] ?? []);
+    if (!docenti.contains(uid)) {
+      throw Exception('Non hai i permessi per modificare questo appello');
+    }
+
+    // Aggiorna lo stato dell'appello
+    await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .update({
+      'stato': 'chiuso'
+    });
+  }
+
+// Registra presenza/assenza degli studenti all'appello
+  Future<void> registraPresenzaAppello(String corsoId, String appelloId,
+      String studenteId, bool presente) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Verifica che l'utente sia un docente del corso
+    final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+    if (!corsoDoc.exists) throw Exception('Corso non trovato');
+
+    final docenti = List<String>.from(corsoDoc.data()?['docenti'] ?? []);
+    if (!docenti.contains(uid)) {
+      throw Exception('Non hai i permessi per registrare le presenze');
+    }
+
+    // Ottieni l'appello e gli iscritti
+    final appelloDoc = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .get();
+
+    if (!appelloDoc.exists) throw Exception('Appello non trovato');
+
+    final appelloData = appelloDoc.data()!;
+    List<Map<String, dynamic>> iscritti = List<Map<String, dynamic>>.from(
+        appelloData['iscritti'] ?? []);
+
+    // Trova l'iscrizione dello studente e aggiorna lo stato
+    for (int i = 0; i < iscritti.length; i++) {
+      if (iscritti[i]['id'] == studenteId) {
+        // Crea una copia dell'elemento per modificarlo
+        Map<String, dynamic> iscrittoAggiornato = Map<String, dynamic>.from(
+            iscritti[i]);
+
+        // Aggiorna lo stato
+        iscrittoAggiornato['stato'] = presente ? 'presente' : 'assente';
+
+        // Rimuovi il vecchio elemento e aggiungi quello aggiornato
+        await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('appelli')
+            .doc(appelloId)
+            .update({
+          'iscritti': FieldValue.arrayRemove([iscritti[i]])
+        });
+
+        await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('appelli')
+            .doc(appelloId)
+            .update({
+          'iscritti': FieldValue.arrayUnion([iscrittoAggiornato])
+        });
+
+        break;
+      }
+    }
+  }
+
+// Registra il voto di uno studente per un appello
+  Future<void> registraVotoAppello(String corsoId, String appelloId,
+      String studenteId, dynamic voto) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Verifica che l'utente sia un docente del corso
+    final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+    if (!corsoDoc.exists) throw Exception('Corso non trovato');
+
+    final docenti = List<String>.from(corsoDoc.data()?['docenti'] ?? []);
+    if (!docenti.contains(uid)) {
+      throw Exception('Non hai i permessi per registrare i voti');
+    }
+
+    // Ottieni l'appello e gli iscritti
+    final appelloDoc = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .get();
+
+    if (!appelloDoc.exists) throw Exception('Appello non trovato');
+
+    final appelloData = appelloDoc.data()!;
+    List<Map<String, dynamic>> iscritti = List<Map<String, dynamic>>.from(
+        appelloData['iscritti'] ?? []);
+
+    // Trova l'iscrizione dello studente e aggiorna il voto
+    for (int i = 0; i < iscritti.length; i++) {
+      if (iscritti[i]['id'] == studenteId) {
+        // Crea una copia dell'elemento per modificarlo
+        Map<String, dynamic> iscrittoAggiornato = Map<String, dynamic>.from(
+            iscritti[i]);
+
+        // Aggiorna il voto
+        iscrittoAggiornato['voto'] = voto;
+
+        // Rimuovi il vecchio elemento e aggiungi quello aggiornato
+        await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('appelli')
+            .doc(appelloId)
+            .update({
+          'iscritti': FieldValue.arrayRemove([iscritti[i]])
+        });
+
+        await _firestore
+            .collection('corsi')
+            .doc(corsoId)
+            .collection('appelli')
+            .doc(appelloId)
+            .update({
+          'iscritti': FieldValue.arrayUnion([iscrittoAggiornato])
+        });
+
+        break;
+      }
+    }
+  }
+
+// Imposta l'appello come valutato (tutti i voti sono stati assegnati)
+  Future<void> completaValutazioneAppello(String corsoId,
+      String appelloId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Verifica che l'utente sia un docente del corso
+    final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+    if (!corsoDoc.exists) throw Exception('Corso non trovato');
+
+    final docenti = List<String>.from(corsoDoc.data()?['docenti'] ?? []);
+    if (!docenti.contains(uid)) {
+      throw Exception('Non hai i permessi per modificare questo appello');
+    }
+
+    // Aggiorna lo stato dell'appello
+    await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .doc(appelloId)
+        .update({
+      'stato': 'valutato'
+    });
+  }
+
+// Ottieni statistiche degli appelli di un corso
+  Future<Map<String, dynamic>> getStatisticheAppelli(String corsoId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return _emptyStatistiche();
+
+    // Verifica che l'utente sia un docente del corso
+    final corsoDoc = await _firestore.collection('corsi').doc(corsoId).get();
+    if (!corsoDoc.exists) return _emptyStatistiche();
+
+    final docenti = List<String>.from(corsoDoc.data()?['docenti'] ?? []);
+    if (!docenti.contains(uid)) {
+      return _emptyStatistiche();
+    }
+
+    // Ottieni tutti gli appelli del corso
+    final appelliSnapshot = await _firestore
+        .collection('corsi')
+        .doc(corsoId)
+        .collection('appelli')
+        .where('stato', isEqualTo: 'valutato')
+        .get();
+
+    if (appelliSnapshot.docs.isEmpty) {
+      return _emptyStatistiche();
+    }
+
+    int totaleAppelli = appelliSnapshot.docs.length;
+    int totaleIscritti = 0;
+    int totalePresenti = 0;
+    int studentiPromossi = 0; // Aggiungiamo questo contatore
+    List<dynamic> voti = [];
+
+    for (var appelloDoc in appelliSnapshot.docs) {
+      final iscritti = List<Map<String, dynamic>>.from(
+          appelloDoc.data()['iscritti'] ?? []);
+      totaleIscritti += iscritti.length;
+
+      for (var iscritto in iscritti) {
+        if (iscritto['stato'] == 'presente') {
+          totalePresenti++;
+        }
+
+        // Conta studenti promossi (voto >= 18)
+        if (iscritto['voto'] != null && iscritto['voto'] is num &&
+            iscritto['voto'] >= 18) {
+          studentiPromossi++;
+        }
+
+        if (iscritto['voto'] != null) {
+          voti.add(iscritto['voto']);
+        }
+      }
+    }
+
+    // Calcola media voti
+    double mediaVoti = 0.0;
+    if (voti.isNotEmpty) {
+      double somma = 0.0;
+      for (var voto in voti) {
+        if (voto is num) {
+          somma += voto.toDouble();
+        }
+      }
+      mediaVoti = somma / voti.length;
+    }
+
+    // Calcola distribuzione dei voti
+    Map<String, int> distribuzioneMap = {};
+    for (var voto in voti) {
+      if (voto is num) {
+        String fascia = '';
+        if (voto < 18)
+          fascia = '< 18';
+        else if (voto >= 18 && voto < 21)
+          fascia = '18-20';
+        else if (voto >= 21 && voto < 24)
+          fascia = '21-23';
+        else if (voto >= 24 && voto < 27)
+          fascia = '24-26';
+        else if (voto >= 27 && voto < 30)
+          fascia = '27-29';
+        else
+          fascia = '30/30L';
+
+        distribuzioneMap[fascia] = (distribuzioneMap[fascia] ?? 0) + 1;
+      }
+    }
+
+    List<Map<String, dynamic>> distribuzione = distribuzioneMap.entries.map((
+        entry) {
+      return {
+        'fascia': entry.key,
+        'numero': entry.value,
+      };
+    }).toList();
+
+    return {
+      'totaleAppelli': totaleAppelli,
+      'totaleIscritti': totaleIscritti,
+      'totalePresenti': totalePresenti,
+      'studentiPromossi': studentiPromossi, // Aggiungiamo questo campo
+      'mediaVoti': mediaVoti,
+      'distribuzione': distribuzione,
+    };
+  }
+
+// Helper method that returns empty statistics with all fields initialized
+  Map<String, dynamic> _emptyStatistiche() {
+    return {
+      'totaleAppelli': 0,
+      'totaleIscritti': 0,
+      'totalePresenti': 0,
+      'studentiPromossi': 0,
+      'mediaVoti': 0.0,
+      'distribuzione': [],
+    };
+  }
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unicalhub/firebase_service.dart';
 import 'package:unicalhub/screens/chat_list_screen.dart';
+import 'package:unicalhub/screens/professore/appelli_professore_screen.dart';
+import 'package:unicalhub/screens/professore/statistiche_screen.dart';
 import '../auth_screen.dart';
 import '../voti_screen.dart';
 import 'corsi_professore_screen.dart';
@@ -155,6 +157,26 @@ class ProfessoreScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => const ChatListScreen()),
                     ),
                   ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Appelli',
+                    icon: Icons.event_note,
+                    color: Colors.green[700]!,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AppelliProfessoreScreen()),
+                    ),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Statistiche',
+                    icon: Icons.bar_chart,
+                    color: Colors.amber[500]!,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const StatisticheProfessoreScreen()),
+                    ),
+                  ),
                 ],
               ),
               // Sezione informazioni recenti
@@ -228,7 +250,7 @@ class ProfessoreScreen extends StatelessWidget {
                         title: item['titolo'],
                         subtitle: item['subtitle'],
                         time: item['time'],
-                        icon: IconData(item['icon'], fontFamily: 'MaterialIcons'),
+                        icon: IconData(item['icon'].toInt(), fontFamily: 'MaterialIcons'),
                         color: Color(item['color']),
                         onTap: () {
                           // Naviga in base al tipo di attività
