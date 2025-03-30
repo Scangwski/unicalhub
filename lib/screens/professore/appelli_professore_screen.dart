@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unicalhub/firebase_service.dart';
 import 'package:intl/intl.dart';
-import 'package:unicalhub/screens/dettagli_appello_screen.dart';
+import 'package:unicalhub/screens/professore/dettagli_appello_screen.dart';
 
 class AppelliProfessoreScreen extends StatefulWidget {
   final String? corsoId;

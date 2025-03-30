@@ -2,11 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/auth_screen.dart';
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
-  runApp(const MyApp());
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Configura Firebase Auth per tollerare gli errori di reCAPTCHA
+  FirebaseAuth.instance.setSettings(
+    appVerificationDisabledForTesting: true, // Solo per debug/testing!
+  );
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
