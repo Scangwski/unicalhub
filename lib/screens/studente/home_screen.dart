@@ -4,6 +4,7 @@ import 'package:unicalhub/firebase_service.dart';
 import 'package:unicalhub/screens/chat/chat_list_screen.dart';
 import 'package:unicalhub/screens/studente/appelli_studenti_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:unicalhub/screens/studente/voti_screen.dart';
 import '../auth_screen.dart';
 import '../studente/corsi_studente_screen.dart';
 
@@ -355,6 +356,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => AppelliStudenteScreen()),
+                        ),
+                      ),
+                      _buildFeatureCard(
+                        context,
+                        title: 'Voti',
+                        subtitle: 'Esito degli esami',
+                        icon: Icons.event_note,
+                        color: Colors.amber[700]!,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => VotiStudentiScreen()),
                         ),
                       ),
 

@@ -61,93 +61,65 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     _formKey.currentState!.save();
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
+    setState(() { _isLoading = true; _errorMessage = ''; });
 
     try {
-      // Prima disconnetti qualsiasi sessione attiva
       await FirebaseAuth.instance.signOut();
 
       if (_isLogin) {
-        // Login con gestione dell'errore reCAPTCHA
         try {
           UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-            email: _email,
-            password: _password,
+            email: _email, password: _password,
           );
           _checkUserRole(userCredential.user?.uid);
         } catch (e) {
-          if (e.toString().contains('A network error') ||
-              e.toString().contains('RecaptchaAction')) {
-            // Ritenta l'autenticazione con approccio alternativo
-            await Future.delayed(Duration(seconds: 1)); // Breve attesa
+          if (e.toString().contains('A network error') || e.toString().contains('RecaptchaAction')) {
+            await Future.delayed(Duration(seconds: 1));
             UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-              email: _email,
-              password: _password,
+              email: _email, password: _password,
             );
             _checkUserRole(userCredential.user?.uid);
           } else {
-            throw e; // Rilancia l'errore se non è correlato a reCAPTCHA
+            throw e;
           }
         }
       } else {
-        // Codice per la registrazione (invariato)
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-          email: _email,
-          password: _password,
+          email: _email, password: _password,
         );
 
         try {
           await _firestore.collection('users').doc(userCredential.user?.uid).set({
-            'firstName': _firstName,
-            'lastName': _lastName,
-            'email': _email,
-            'admin': _admin,
-            'professore': _professore,
+            'firstName': _firstName, 'lastName': _lastName, 'email': _email,
+            'admin': _admin, 'professore': _professore,
             'createdAt': FieldValue.serverTimestamp(),
           });
           _checkUserRole(userCredential.user?.uid);
         } catch (firestoreError) {
-          setState(() {
-            _errorMessage = 'Errore durante il salvataggio in Firestore: ${firestoreError.toString()}';
-          });
+          setState(() => _errorMessage = 'Errore durante il salvataggio: $firestoreError');
         }
       }
     } on FirebaseAuthException catch (error) {
-      // Gestione errori (invariata)
-      String message = 'Si è verificato un errore durante l\'autenticazione';
-      if (error.code == 'weak-password') {
-        message = 'La password è troppo debole.';
-      } else if (error.code == 'email-already-in-use') {
-        message = 'Esiste già un account con questa email.';
-      } else if (error.code == 'user-not-found') {
-        message = 'Nessun utente trovato con questa email.';
-      } else if (error.code == 'wrong-password') {
-        message = 'Password non corretta.';
-      } else if (error.code == 'invalid-email') {
-        message = 'L\'email non è valida.';
-      } else if (error.code == 'web-context-canceled') {
-        message = 'Verifica reCAPTCHA fallita. Riprova con una connessione migliore.';
-      }
-      setState(() {
-        _errorMessage = message;
-      });
+      String message = 'Errore di autenticazione';
+
+      Map<String, String> errorMessages = {
+        'weak-password': 'La password è troppo debole.',
+        'email-already-in-use': 'Esiste già un account con questa email.',
+        'user-not-found': 'Nessun utente trovato con questa email.',
+        'wrong-password': 'Password non corretta.',
+        'invalid-email': 'L\'email non è valida.',
+        'web-context-canceled': 'Verifica reCAPTCHA fallita. Riprova.',
+      };
+
+      setState(() => _errorMessage = errorMessages[error.code] ?? message);
     } catch (error) {
-      setState(() {
-        _errorMessage = 'Si è verificato un errore: ${error.toString()}';
-      });
+      setState(() => _errorMessage = 'Si è verificato un errore: $error');
     }
 
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
   Future<void> _checkUserRole(String? uid) async {
@@ -201,7 +173,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unicalhub/firebase_service.dart';
 import 'package:intl/intl.dart';
+import 'package:unicalhub/screens/studente/voti_screen.dart';
 
 class AppelliStudenteScreen extends StatefulWidget {
   final String? corsoId;
@@ -47,9 +48,12 @@ class _AppelliStudenteScreenState extends State<AppelliStudenteScreen> with Sing
           controller: _tabController,
           indicatorColor: Colors.white,
           indicatorWeight: 3,
+          labelColor: Colors.white,
+
           tabs: const [
             Tab(text: 'DISPONIBILI'),
             Tab(text: 'ISCRIZIONI'),
+
           ],
         ),
       ),
@@ -63,6 +67,7 @@ class _AppelliStudenteScreenState extends State<AppelliStudenteScreen> with Sing
 
           // Tab Iscrizioni
           _buildIscrizioniTab(),
+
         ],
       ),
     );
@@ -245,9 +250,10 @@ class _AppelliStudenteScreenState extends State<AppelliStudenteScreen> with Sing
 
                         else
                           ElevatedButton.icon(
-                            icon: const Icon(Icons.check),
+                            icon: const Icon(Icons.check, color: Colors.white,),
                             label: const Text('Iscriviti'),
                             style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
                               backgroundColor: Colors.redAccent[700],
                             ),
                             onPressed: () {
@@ -542,15 +548,38 @@ class _AppelliStudenteScreenState extends State<AppelliStudenteScreen> with Sing
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent[700],
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  onPressed: () {
-                    _tabController.animateTo(0); // Vai alla tab degli appelli disponibili
-                  },
-                  child: const Text('Vedi Appelli Disponibili'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent[700],
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      onPressed: () {
+                        _tabController.animateTo(0); // Vai alla tab degli appelli disponibili
+                      },
+                      child: const Text('Vedi Appelli Disponibili'),
+                    ),
+                    const SizedBox(width: 16),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.grading),
+                      label: const Text('I miei voti'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.redAccent[700],
+                        side: BorderSide(color: Colors.redAccent[700]!),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VotiStudentiScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -572,6 +601,32 @@ class _AppelliStudenteScreenState extends State<AppelliStudenteScreen> with Sing
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Pulsante per accedere ai voti nella parte superiore
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.grading, color: Colors.white),
+                label: const Text('Visualizza tutti i voti'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent[700],
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VotiStudentiScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+
             if (appelliAttivi.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.only(bottom: 12),
@@ -589,17 +644,35 @@ class _AppelliStudenteScreenState extends State<AppelliStudenteScreen> with Sing
             ],
 
             if (appelliPassati.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.only(bottom: 12),
-                child: Text(
-                  'STORICO APPELLI',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'STORICO APPELLI',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
-                ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.grading, size: 16),
+                    label: const Text('Vedi voti'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.redAccent[700],
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VotiStudentiScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
+              const SizedBox(height: 12),
               ...appelliPassati.map(_buildAppelloCard),
             ],
           ],
